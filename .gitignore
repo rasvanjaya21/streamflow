@@ -3,4 +3,5 @@ public/uploads/
 logs/
 
 # ignore real env from repo
-.env
+.env*
+!*.example

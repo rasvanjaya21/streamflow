@@ -1,18 +1,38 @@
-version: '3.8'
 services:
-  app:
-    build: .
-    container_name: streamflow-app
-    restart: unless-stopped
-    ports:
-      - "7575:7575"
-    env_file:
-      - .env
-    volumes:
-      - ./db:/app/db
-      - ./logs:/app/logs
-      - ./public/uploads:/app/public/uploads
-    environment:
-      - NODE_ENV=production
-    # Uncomment jika ingin mengatur timezone container
-    # - TZ=Asia/Jakarta 
+    app:
+        build: .
+        image: streamflow:2.1.1
+        pull_policy: build
+        security_opt:
+            - no-new-privileges:true
+        volumes:
+            - ./db:/app/db
+            - ./logs:/app/logs
+            - ./public/uploads:/app/public/uploads
+        networks:
+            - ${TRAEFIK_NETWORK}
+        env_file: .env
+        restart: unless-stopped
+        labels:
+            - 'traefik.enable=true'
+
+            - 'traefik.http.routers.${TRAEFIK_ROUTER}.entryPoints=websecure'
+            - 'traefik.http.routers.${TRAEFIK_ROUTER}.rule=${TRAEFIK_HOST}'
+            - 'traefik.http.routers.${TRAEFIK_ROUTER}.tls=true'
+            - 'traefik.http.routers.${TRAEFIK_ROUTER}.tls.certresolver=leResolver'
+            - 'traefik.http.routers.${TRAEFIK_ROUTER}.service=${TRAEFIK_SERVICE}@docker'
+            - 'traefik.http.services.${TRAEFIK_SERVICE}.loadbalancer.server.port=7575'
+
+            - 'traefik.docker.network=${TRAEFIK_NETWORK}'
+        init: true
+        healthcheck:
+            test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:7575 >/dev/null 2>&1 || exit 1']
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 5s
+
+networks:
+    traefik-network:
+        name: ${TRAEFIK_NETWORK}
+        external: true

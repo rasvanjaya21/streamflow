@@ -316,6 +316,9 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/signup', async (req, res) => {
+  
+  if (process.env.IS_REGISTER_DISABLED === "true") return res.redirect('/dashboard');
+
   if (req.session.userId) {
     return res.redirect('/dashboard');
   }
@@ -340,6 +343,9 @@ app.get('/signup', async (req, res) => {
 });
 
 app.post('/signup', upload.single('avatar'), async (req, res) => {
+  
+  if (process.env.IS_REGISTER_DISABLED === "true") return res.redirect('/dashboard');
+
   const { username, password, confirmPassword, user_role, status } = req.body;
   
   try {

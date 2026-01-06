@@ -22,11 +22,11 @@ function updateSessionSecret() {
     }
     
     if (envContent && oldSecret) {
-      envContent = envContent.replace(/SESSION_SECRET=.*/, `SESSION_SECRET=${newSecret}`);
+      envContent = envContent.replace(/SESSION_SECRET=.*/, `SESSION_SECRET="${newSecret}"`);
     } else if (envContent) {
-      envContent += `\nSESSION_SECRET=${newSecret}`;
+      envContent += `\nSESSION_SECRET="${newSecret}"`;
     } else {
-      envContent = `PORT=7575\nSESSION_SECRET=${newSecret}\n`;    }
+      envContent = `SESSION_SECRET="${newSecret}"\n`;    }
       fs.writeFileSync(envPath, envContent, 'utf8');
     
     console.log(`Session secret: ${newSecret.substring(0, 8)}...${newSecret.substring(newSecret.length - 8)}`);

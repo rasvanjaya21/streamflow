@@ -1,26 +1,25 @@
-# Gunakan image Node.js versi 18 (atau 16+)
-FROM node:18-slim
+FROM oven/bun:1.3.0-alpine AS base
 
-# Install ffmpeg
-RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+RUN apk update && apk add --no-cache ffmpeg
 
-# Set working directory
+RUN addgroup -S pinc && adduser -S -u 1001 -G pinc pinc
+
+FROM base AS development-dependencies
 WORKDIR /app
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
-# Copy package.json dan package-lock.json
-COPY package*.json ./
+FROM base AS production-dependencies
+WORKDIR /app
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile --production && bun pm cache rm
 
-# Install dependencies
-RUN npm install --production
+FROM base AS runner
+WORKDIR /app
+COPY ./ ./
+COPY --from=production-dependencies /app/node_modules ./node_modules
+RUN chown -R pinc:pinc /app
+ENV NODE_ENV production
 
-# Copy seluruh source code
-COPY . .
-
-# Buat folder yang dibutuhkan (jika belum ada)
-RUN mkdir -p db logs public/uploads/videos public/uploads/thumbnails
-
-# Expose port (default 7575, bisa diubah via .env)
-EXPOSE 7575
-
-# Jalankan aplikasi
-CMD ["npm", "start"] 
+USER pinc
+CMD [ "bun", "start" ]
