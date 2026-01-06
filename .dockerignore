@@ -1,5 +1,12 @@
-node_modules
-npm-debug.log
+.git*/
 db/*.db
 logs/*
-.env 
+node_modules/
+.bumrc
+*.*ignore
+.env
+*.example
+clean.ts
+docker-compose.yaml
+Dockerfile
+README.md
