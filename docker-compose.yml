@@ -1,7 +1,7 @@
 services:
     app:
         build: .
-        image: streamflow:2.2.2
+        image: streamflow:2.2.3
         pull_policy: build
         security_opt:
             - no-new-privileges:true
